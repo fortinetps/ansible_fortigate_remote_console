@@ -1,0 +1,11 @@
+{
+    "ANSIBLE_MODULE_ARGS": {
+        "rcs_ip": "10.80.199.99",
+        "rcs_username": "InReach",
+        "rcs_password": "access",
+        "rcs_fgt_username": "admin",
+        "rcs_fgt_password": "fortinet",
+        "rcs_fgt_port": 2922,
+        "rcs_fgt_action": "factoryreset"
+    }
+}

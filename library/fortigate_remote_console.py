@@ -712,7 +712,7 @@ class fortigate_remote_console():
                         output = self.rcs_console.before.splitlines()
                         outputs.append(output)
                 elif index == 3:                                        # with this, we want to figure out the hostname for FortiGate for better expect/match
-                    hostname = self.rcs_console.before.splitlines()[-1].split(' ')[0]
+                    hostname = self.rcs_console.before.decode('utf-8').splitlines()[-1].split(' ')[0]
                     # the first split find the last line, which contains the hostname
                     # the second split, in case FortiGate is inside configuration section or in global/vdom, FortiGate doesn't allow space in hostname
                     self.rcs_fgt_prompt = ['dummy_placeholder', hostname + ' # ', hostname + ' \(.+\) # ', ' # ', ' login: ', 'to accept']
