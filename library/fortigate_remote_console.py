@@ -99,6 +99,8 @@ class fortigate_remote_console():
         try:
             output = self.fortigate_remote_console_login()
             # outputs.append(output)
+            if self.rcs_console.terminated:
+                raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s" % (self.rcs_ip, self.rcs_fgt_port, output))
 
             # for each command
             for command in self.rcs_fgt_cli[0].splitlines():
@@ -129,9 +131,8 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
-            if self.rcs_console:
+            if self.rcs_console and not self.rcs_console.terminated:
                 self.fortigate_remote_console_logout()
-                self.rcs_console = None
             rcs_result['console_action_result'] = outputs
             return rcs_result
 
@@ -145,6 +146,8 @@ class fortigate_remote_console():
         try:
             output = self.fortigate_remote_console_login()
             # outputs.append(output)
+            if self.rcs_console.terminated:
+                raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s" % (self.rcs_ip, self.rcs_fgt_port, output))
 
             self.rcs_console.sendline('config global')    # if FortiGate has VDOM enabled, if not, this will generate an message, but won't cause any problem
             self.rcs_console.expect(self.rcs_fgt_prompt)
@@ -181,9 +184,8 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
-            if self.rcs_console:
-                self.rcs_console.close()
-                self.rcs_console = None
+            if self.rcs_console and not self.rcs_console.terminated:
+                self.fortigate_remote_console_logout()
             rcs_result['console_action_result'] = outputs
             return rcs_result
 
@@ -198,6 +200,8 @@ class fortigate_remote_console():
         try:
             output = self.fortigate_remote_console_login()
             # outputs.append(output)
+            if self.rcs_console.terminated:
+                raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s" % (self.rcs_ip, self.rcs_fgt_port, output))
 
             self.rcs_console.sendline('config global')    # if FortiGate has VDOM enabled, if not, this will generate an message, but won't cause any problem
             self.rcs_console.expect(self.rcs_fgt_prompt)
@@ -234,9 +238,8 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
-            if self.rcs_console:
-                self.rcs_console.close()
-                self.rcs_console = None
+            if self.rcs_console and not self.rcs_console.terminated:
+                self.fortigate_remote_console_logout()
             rcs_result['console_action_result'] = outputs
             return rcs_result
 
@@ -251,6 +254,8 @@ class fortigate_remote_console():
         try:
             output = self.fortigate_remote_console_login()
             # outputs.append(output)
+            if self.rcs_console.terminated:
+                raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s" % (self.rcs_ip, self.rcs_fgt_port, output))
 
             self.rcs_console.sendline('config global')    # if FortiGate has VDOM enabled, if not, this will generate an message, but won't cause any problem
             self.rcs_console.expect(self.rcs_fgt_prompt)
@@ -354,9 +359,8 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
-            if self.rcs_console:
-                self.rcs_console.close()
-                self.rcs_console = None
+            if self.rcs_console and not self.rcs_console.terminated:
+                self.fortigate_remote_console_logout()
             rcs_result['console_action_result'] = outputs
             return rcs_result
 
@@ -370,6 +374,8 @@ class fortigate_remote_console():
         try:
             output = self.fortigate_remote_console_login()
             # outputs.append(output)
+            if self.rcs_console.terminated:
+                raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s" % (self.rcs_ip, self.rcs_fgt_port, output))
 
             self.rcs_console.sendline('config global')    # if FortiGate has VDOM enabled, if not, this will generate an message, but won't cause any problem
             self.rcs_console.expect(self.rcs_fgt_prompt)
@@ -448,10 +454,9 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
+            if self.rcs_console and not self.rcs_console.terminated:
+                self.fortigate_remote_console_logout()
             rcs_result['console_action_result'] = outputs
-            if self.rcs_console:
-                self.rcs_console.close()
-                self.rcs_console = None
             return rcs_result
 
 
@@ -464,7 +469,10 @@ class fortigate_remote_console():
 
         try:
             output = self.fortigate_remote_console_login()
-            
+            # outputs.append(output)
+            if self.rcs_console.terminated:
+                raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s" % (self.rcs_ip, self.rcs_fgt_port, output))
+
             self.rcs_console.sendline('config global')    # if FortiGate has VDOM enabled, if not, this will generate an message, but won't cause any problem
             self.rcs_console.expect(self.rcs_fgt_prompt)
 
@@ -583,9 +591,8 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
-            if self.rcs_console:
-                self.rcs_console.close()
-                self.rcs_console = None
+            if self.rcs_console and not self.rcs_console.terminated:
+                self.fortigate_remote_console_logout()
             rcs_result['console_action_result'] = outputs
             return rcs_result
 
@@ -599,6 +606,8 @@ class fortigate_remote_console():
         try:
             output = self.fortigate_remote_console_login()
             # outputs.append(output)
+            if self.rcs_console.terminated:
+                raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s" % (self.rcs_ip, self.rcs_fgt_port, output))
 
             self.rcs_console.sendline('config global')    # if FortiGate has VDOM enabled, if not, this will generate an message, but won't cause any problem
             self.rcs_console.expect(self.rcs_fgt_prompt)
@@ -646,9 +655,8 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
-            if self.rcs_console:
+            if self.rcs_console and not self.rcs_console.terminated:
                 self.fortigate_remote_console_logout()
-                self.rcs_console = None
             rcs_result['console_action_result'] = outputs
             return rcs_result
 
@@ -792,7 +800,7 @@ class fortigate_remote_console():
             outputs.append(str(error).splitlines())
 
         finally:
-            if self.rcs_console:
+            if self.rcs_console and not self.rcs_console.terminated:
                 self.rcs_console.close()
                 self.rcs_console = None
             return outputs

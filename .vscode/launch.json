@@ -1,0 +1,32 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Terminal (integrated) - Test fortigate_remote_console Ansible module with purgedhcp command",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/library/fortigate_remote_console.py",
+            // "cwd": "${workspaceRoot}",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "console": "integratedTerminal",
+            "args": [
+                "${workspaceFolder}/.vscode/fortigate_remote_console_args_purgedhcp.json"
+            ]
+        },
+        {
+            "name": "Python: Terminal (integrated) - Test fortigate_remote_console Ansible module with factoryreset command",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/library/fortigate_remote_console.py",
+            // "cwd": "${workspaceRoot}",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "console": "integratedTerminal",
+            "args": [
+                "${workspaceFolder}/.vscode/fortigate_remote_console_args_factoryreset.json"
+            ]
+        }
+    ]
+}
