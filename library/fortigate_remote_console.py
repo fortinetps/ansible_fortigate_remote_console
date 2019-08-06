@@ -111,7 +111,7 @@ class fortigate_remote_console():
                 outputs.append(output)
 
                 if index == 3:    # with this, it seems like hostname was changed in the middle of the command (mostly by set hostname)
-                    hostname = self.rcs_console.before.splitlines()[-1].split(' ')[0]
+                    hostname = self.rcs_console.before.decode('utf-8').splitlines()[-1].split(' ')[0]
                     # the first split find the last line, which contains the hostname
                     # the second split, in case FortiGate is inside configuration section or in global/vdom, FortiGate doesn't allow space in hostname
                     # update the hostname
@@ -217,6 +217,7 @@ class fortigate_remote_console():
 
             # factoryreset reboots device, and it could reboot more than once
             index = 0
+            wait_for_reboot = True
             while index != 1:
                 index = self.rcs_console.expect(['dummy_placeholder', ' login: ', 'System is starting', 'please wait for reboot'], timeout=1800)  
                 output = self.rcs_console.before.splitlines()
@@ -224,10 +225,11 @@ class fortigate_remote_console():
 
                 if index == 2:
                     wait_for_reboot = False # reset wait_for_reboot flag
-                if index == 3:
+                elif index == 3:
                     wait_for_reboot = True  # we received "please wait for reboot" message
-                if index == 1:
+                elif index == 1:
                     if wait_for_reboot: # skip this login prompt
+                        time.sleep(1)
                         index = 0   # reset the index
                         continue
 
@@ -273,7 +275,7 @@ class fortigate_remote_console():
             # remove the empty line: if disk.strip()
             # remove the last line: output[0:-2], since the last line is cli prompt
             # remove the " (boot)": disk.strip().split(' ')[0]
-            list_disk = [disk.strip().split(' ')[0] for disk in output[0:-2] if disk.strip()]
+            list_disk = [disk.decode('utf-8').strip().split(' ')[0] for disk in output[0:-2] if disk.strip()]
 
             # every erasedisk would reboot the FortiGate
             for disk in list_disk:
@@ -791,10 +793,13 @@ class fortigate_remote_console():
                     prompt_index = self.rcs_console.expect(self.rcs_fgt_prompt)
                     output = self.rcs_console.before.splitlines()
                     outputs.append(output)
+                elif prompt_index == 4:         # FGT is not logged in, no need to do anything 
+                    break
 
             # then exit to quit login
-            self.rcs_console.sendline('exit')
-            time.sleep(2)   # need to wait here for some reason
+            if prompt_index == 1:
+                self.rcs_console.sendline('exit')
+                time.sleep(2)   # need to wait here for some reason
 
         except Exception as error:
             outputs.append(str(error).splitlines())
