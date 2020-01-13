@@ -683,6 +683,10 @@ class fortigate_remote_console():
 
             # in some test environment, I need to run command (rcs_fgt_become) to access the FortiGate context
             if self.rcs_fgt_become:
+                # need to read and clear the buffer before we run become command
+                self.rcs_console.expect(' # ')
+                output = self.rcs_console.before.splitlines()
+                outputs.append(output)
                 self.rcs_console.sendline(self.rcs_fgt_become)
 
             # now we should be in FortiGate context
