@@ -824,6 +824,7 @@ def run_module():
         rcs_fgt_username=dict(type='str', required=True),   # FortiGate login username
         rcs_fgt_password=dict(type='str', required=True, no_log=True),  # FortiGate login password
         rcs_fgt_port=dict(type=int, required=True),   # remote console server port which maps to FortiGate console
+        rcs_fgt_become=dict(type='str', required=False, default=''),   # some remote console server need to run special command in order to access FortiGate console
         rcs_fgt_action=dict(choices=['cli', 'factoryreset', 'reboot', 'erasedisk', 'diskformat', 'restoreimage', 'purgedhcp'], type='str', required=False, default='cli'), # what action perform on FortiGate
         rcs_fgt_cli=dict(type='list',required=False, default=['get system status']),   # which CLI action, put list of CLI (configuration) here
     )
@@ -852,7 +853,7 @@ def run_module():
     if module.params['rcs_fgt_port'] is None:
         module.fail_json(msg='rcs_fgt_port needs to be specified', **result)
 
-    _fortigate_remote_console = fortigate_remote_console(module.params['rcs_ip'], module.params['rcs_username'], module.params['rcs_password'], module.params['rcs_fgt_username'], module.params['rcs_fgt_password'], module.params['rcs_fgt_port'], module.params['rcs_fgt_cli'])
+    _fortigate_remote_console = fortigate_remote_console(module.params['rcs_ip'], module.params['rcs_username'], module.params['rcs_password'], module.params['rcs_fgt_username'], module.params['rcs_fgt_password'], module.params['rcs_fgt_port'], module.params['rcs_fgt_cli'], module.params['rcs_fgt_become'])
     if module.params['rcs_fgt_action'] is not None:
         # perform restore image on FortiGate, 1) reboot 2) interrupt BIOS 3) restore firmware from TFTP
         if module.params['rcs_fgt_action'] == 'restoreimage':
