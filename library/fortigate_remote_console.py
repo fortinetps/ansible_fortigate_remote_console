@@ -76,7 +76,7 @@ import datetime
 from ansible.module_utils.basic import AnsibleModule
 
 class fortigate_remote_console():
-    def __init__(self, rcs_ip, rcs_username, rcs_password, rcs_fgt_username='admin', rcs_fgt_password='', rcs_fgt_port=None, rcs_fgt_cli=None):
+    def __init__(self, rcs_ip, rcs_username, rcs_password, rcs_fgt_username='admin', rcs_fgt_password='', rcs_fgt_port=None, rcs_fgt_cli=None, rcs_fgt_become=None):
         self.rcs_ip = rcs_ip
         self.rcs_username = rcs_username
         self.rcs_password = rcs_password
@@ -84,10 +84,11 @@ class fortigate_remote_console():
         self.rcs_fgt_username = rcs_fgt_username
         self.rcs_fgt_password = rcs_fgt_password
         self.rcs_fgt_cli = rcs_fgt_cli
+        self.rcs_fgt_become = rcs_fgt_become
 
         self.rcs_prompt = None                          # CLI prompt for remote console server (rcs) itself
         self.rcs_console = None                         # Remote Console connection (for console access)
-        self.rcs_fgt_prompt = None     # CLI prompt for device (FGT) connected to the remote console port
+        self.rcs_fgt_prompt = None                      # CLI prompt for device (FGT) connected to the remote console port
 
     ############################################################################
     def fortigate_remote_console_cli(self):
@@ -679,6 +680,10 @@ class fortigate_remote_console():
 
             # send remote console server password
             self.rcs_console.sendline(self.rcs_password)
+
+            # in some test environment, I need to run command (rcs_fgt_become) to access the FortiGate context
+            if self.rcs_fgt_become:
+                self.rcs_console.sendline(self.rcs_fgt_become)
 
             # now we should be in FortiGate context
             index = 0
