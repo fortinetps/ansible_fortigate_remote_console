@@ -106,7 +106,7 @@ class fortigate_remote_console():
             # for each command
             for command in self.rcs_fgt_cli[0].splitlines():
                 self.rcs_console.sendline(command)
-                time.sleep(1)
+                time.sleep(len(command)*8*5/9600)
                 index = self.rcs_console.expect(self.rcs_fgt_prompt)
                 output = self.rcs_console.before.splitlines()
                 outputs.append(output)
