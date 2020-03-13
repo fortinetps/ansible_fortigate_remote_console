@@ -1,0 +1,12 @@
+{
+    "ANSIBLE_MODULE_ARGS": {
+        "rcs_ip": "10.250.80.24",
+        "rcs_username": "admin",
+        "rcs_password": "fortinet",
+        "rcs_fgt_become": "poc device console D13_FW1",
+        "rcs_fgt_username": "admin",
+        "rcs_fgt_password": "1234",
+        "rcs_fgt_port": 22,
+        "rcs_fgt_action": "cli"
+    }
+}

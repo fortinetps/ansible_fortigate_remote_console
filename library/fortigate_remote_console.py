@@ -76,7 +76,7 @@ import datetime
 from ansible.module_utils.basic import AnsibleModule
 
 class fortigate_remote_console():
-    def __init__(self, rcs_ip, rcs_username, rcs_password, rcs_fgt_username='admin', rcs_fgt_password='', rcs_fgt_port=None, rcs_fgt_cli=None, rcs_fgt_become=None):
+    def __init__(self, rcs_ip, rcs_username, rcs_password, rcs_fgt_username='admin', rcs_fgt_password='', rcs_fgt_port=None, rcs_fgt_cli=None, rcs_fgt_become=None, rcs_timeout=None):
         self.rcs_ip = rcs_ip
         self.rcs_username = rcs_username
         self.rcs_password = rcs_password
@@ -85,6 +85,7 @@ class fortigate_remote_console():
         self.rcs_fgt_password = rcs_fgt_password
         self.rcs_fgt_cli = rcs_fgt_cli
         self.rcs_fgt_become = rcs_fgt_become
+        self.rcs_timeout = rcs_timeout
 
         self.rcs_prompt = None                          # CLI prompt for remote console server (rcs) itself
         self.rcs_console = None                         # Remote Console connection (for console access)
@@ -670,13 +671,20 @@ class fortigate_remote_console():
 
         try:
             index = 1
-            while index:
+            attempt = self.rcs_timeout
+            while index and attempt:
                 # try connect to remote console server
                 # expect to see the password prompt
                 self.rcs_console = pexpect.spawn(ssh_connection_string, timeout=60)
                 index = self.rcs_console.expect(['assword: ', 'Connection reset by peer'], timeout=60)
+                if index:
+                    outputs.append('Failed to connect to remote console server ' + str(self.rcs_timeout + 1 - attempt))
                 output = self.rcs_console.before.splitlines()
                 outputs.append(output)
+                attempt = attempt - 1
+
+            if attempt == 0:
+                raise Exception('Attemtp to connect to remote console server ' + str(self.rcs_timeout) + ' times, but all failed, please check if remote console port is being used by other user')
 
             # send remote console server password
             self.rcs_console.sendline(self.rcs_password)
@@ -830,6 +838,7 @@ def run_module():
         rcs_fgt_port=dict(type=int, required=True),   # remote console server port which maps to FortiGate console
         rcs_fgt_become=dict(type='str', required=False, default=''),   # some remote console server need to run special command in order to access FortiGate console
         rcs_fgt_action=dict(choices=['cli', 'factoryreset', 'reboot', 'erasedisk', 'diskformat', 'restoreimage', 'purgedhcp'], type='str', required=False, default='cli'), # what action perform on FortiGate
+        rcs_timeout=dict(type='int', required=False, default=5),  # remote console server (rcs) login timeout (in minute)
         rcs_fgt_cli=dict(type='list',required=False, default=['get system status']),   # which CLI action, put list of CLI (configuration) here
     )
 
@@ -857,7 +866,7 @@ def run_module():
     if module.params['rcs_fgt_port'] is None:
         module.fail_json(msg='rcs_fgt_port needs to be specified', **result)
 
-    _fortigate_remote_console = fortigate_remote_console(module.params['rcs_ip'], module.params['rcs_username'], module.params['rcs_password'], module.params['rcs_fgt_username'], module.params['rcs_fgt_password'], module.params['rcs_fgt_port'], module.params['rcs_fgt_cli'], module.params['rcs_fgt_become'])
+    _fortigate_remote_console = fortigate_remote_console(module.params['rcs_ip'], module.params['rcs_username'], module.params['rcs_password'], module.params['rcs_fgt_username'], module.params['rcs_fgt_password'], module.params['rcs_fgt_port'], module.params['rcs_fgt_cli'], module.params['rcs_fgt_become'], module.params['rcs_timeout'])
     if module.params['rcs_fgt_action'] is not None:
         # perform restore image on FortiGate, 1) reboot 2) interrupt BIOS 3) restore firmware from TFTP
         if module.params['rcs_fgt_action'] == 'restoreimage':

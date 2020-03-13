@@ -17,6 +17,19 @@
             ]
         },
         {
+            "name": "Python: Terminal (integrated) - Test fortigate_remote_console Ansible module with become option and cli command",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/library/fortigate_remote_console.py",
+            // "cwd": "${workspaceRoot}",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "${workspaceFolder}/.vscode/fortigate_remote_console_args_become.json"
+            ]
+        },
+        {
             "name": "Python: Terminal (integrated) - Test fortigate_remote_console Ansible module with factoryreset command",
             "type": "python",
             "request": "launch",
