@@ -676,7 +676,7 @@ class fortigate_remote_console():
                 # try connect to remote console server
                 # expect to see the password prompt
                 self.rcs_console = pexpect.spawn(ssh_connection_string, timeout=60)
-                index = self.rcs_console.expect(['assword: ', 'Connection reset by peer'], timeout=60)
+                index = self.rcs_console.expect(['assword: ', 'Connection reset by peer', pexpect.EOF, pexpect.TIMEOUT], timeout=60)
                 if index:
                     outputs.append('Failed to connect to remote console server ' + str(self.rcs_timeout + 1 - attempt))
                 output = self.rcs_console.before.splitlines()
@@ -698,6 +698,10 @@ class fortigate_remote_console():
                 self.rcs_console.sendline(self.rcs_fgt_become)
 
             # now we should be in FortiGate context
+            # As we tested some Cisco remote console server, they would accespt passowrd but then return message like
+            # "This connection is in use. User(s) currently connected: XXXXXXXX."
+            # "You need privilege to make a simultaneous session."
+            # Then remote console server terminate the connection (EOF)
             index = 0
             while index != 3:
                 # send "enter" to FortiGate, FortiGate should spit out something, try to figure out what status/context FortiGate is in
@@ -709,7 +713,7 @@ class fortigate_remote_console():
                 # option#2(return 1) is when FortiGate display the pre-login banner
                 # option#3(return 2) is when FortiGate display login (self.rcs_fgt_prompt)
                 # option#4(return 3) is when FortiGate is already logged in
-                # option#5(return 4) is something we are not sure
+                # option#5(return 4) is something we are not sure (it seems happens to Cisco remote console server without simutaneous session enabled)
                 if index == 1:
                     # see pre-login banner
                     self.rcs_console.sendline('a')                      # press 'a' to accept pre-login banner
@@ -759,6 +763,8 @@ class fortigate_remote_console():
                             prompt_index = self.rcs_console.expect(self.rcs_fgt_prompt)
                             output = self.rcs_console.before.splitlines()
                             outputs.append(output)
+                elif index == 4:                                        # with this, raise exception
+                    raise Exception('Attemtp to connect to remote console port but failed, please check if remote console port is being used by other user')
 
             # Another thing we need to take care of is to set console output to standard mode (default is more mode)
             self.rcs_console.sendline('config global')    # if FortiGate has VDOM enabled, if not, this will generate an message, but won't cause any problem
@@ -881,7 +887,7 @@ def run_module():
             console_result = _fortigate_remote_console.fortigate_remote_console_purgedhcp()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
             if console_result['status']:
-                module.fail_json(msg='Something wrong with rcs_fgt_purgedhcp', **result)
+                module.fail_json(msg='Something wrong with rcs_fgt_purgedhcp, please check if remote console connection is being used by another user!', **result)
                 return
             result['changed'] = console_result['changed']    # a reboot action is always has changed = True
         # perform diskformat on FortiGate CLI
