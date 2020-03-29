@@ -929,7 +929,7 @@ def run_module():
             console_result = _fortigate_remote_console.fortigate_remote_console_purgedhcp()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
             if console_result['status']:
-                module.fail_json(msg='Something wrong with rcs_fgt_purgedhcp, please check if remote console server is accessible and/or ' \
+                module.fail_json(msg='Something wrong with rcs_fgt_purgedhcp, please check if remote console server is accessible and/or ' +
                                      'FortiGate is on and connected and/or FortiGate console connection is being used by another user!',
                                  **result)
                 return
