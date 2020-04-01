@@ -685,7 +685,7 @@ class fortigate_remote_console():
                 # try connect to remote console server
                 # expect to see the password prompt
                 self.rcs_console = pexpect.spawn(ssh_connection_string)
-                index = self.rcs_console.expect(['assword: ', pexpect.EOF, pexpect.TIMEOUT], timeout=15)
+                index = self.rcs_console.expect(['assword: ', pexpect.EOF, pexpect.TIMEOUT], timeout=60)
                 if index:
                     outputs.append('Failed to connect to remote console server ' + str(self.rcs_timeout + 1 - attempt))
                 output = self.rcs_console.before.splitlines()
