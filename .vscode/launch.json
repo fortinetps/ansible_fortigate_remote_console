@@ -5,6 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Terminal (integrated) - Test fortigate_remote_console Ansible module with FOS62 and purgedhcp command",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/library/fortigate_remote_console.py",
+            // "cwd": "${workspaceRoot}",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "console": "integratedTerminal",
+            "args": [
+                "${workspaceFolder}/.vscode/fortigate_remote_console_args_62_test.json"
+            ]
+        },
+        {
             "name": "Python: Terminal (integrated) - Test fortigate_remote_console Ansible module with purgedhcp command",
             "type": "python",
             "request": "launch",

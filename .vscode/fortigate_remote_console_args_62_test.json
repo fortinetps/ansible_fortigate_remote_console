@@ -1,11 +1,11 @@
 {
     "ANSIBLE_MODULE_ARGS": {
-        "rcs_ip": "10.250.0.199",
-        "rcs_username": "rcsuser1",
-        "rcs_password": "Fortinet1!",
+        "rcs_ip": "10.80.199.99",
+        "rcs_username": "InReach",
+        "rcs_password": "access",
         "rcs_fgt_username": "admin",
         "rcs_fgt_password": "fortinet",
-        "rcs_fgt_port": 2002,
+        "rcs_fgt_port": 3022,
         "rcs_fgt_action": "purgedhcp"
     }
 }

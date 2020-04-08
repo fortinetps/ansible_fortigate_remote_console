@@ -91,6 +91,10 @@ class fortigate_remote_console():
         self.rcs_console = None         # Remote Console connection (for console access)
         self.rcs_fgt_prompt = None      # CLI prompt for device (FGT) connected to the remote console port
 
+        self.serial = None
+        self.factorydefaultcheck = False
+        self.factorydefault = False
+
     ############################################################################
     def fortigate_remote_console_cli(self):
         outputs = []
@@ -771,10 +775,22 @@ class fortigate_remote_console():
                             output = self.rcs_console.before.splitlines()
                             outputs.append(output)
                         self.rcs_console.sendline('')                       # try black password for FortiGate login
-                        index = self.rcs_console.expect([' # ', pexpect.EOF, pexpect.TIMEOUT], timeout=15)
+                        # with FOS 6.0, factory default device take blank password and login
+                        # with FOS 6.2, factory default device take blank password and prompt/force to change/set new password before login
+                        index = self.rcs_console.expect([' # ', 'New Password:', pexpect.EOF, pexpect.TIMEOUT], timeout=15)
                         output = self.rcs_console.before.splitlines()
                         outputs.append(output)
-                        if index:
+                        if index == 0:  # this is FOS 6.0 factory default behavior
+                            self.factorydefaultcheck = True
+                            self.factorydefault = True
+                        elif index == 1:  # this is FOS 6.2 factory default behavior
+                            self.rcs_console.sendline(self.rcs_fgt_password)
+                            self.rcs_console.expect('Confirm Password:')
+                            self.rcs_console.sendline(self.rcs_fgt_password)
+                            self.rcs_console.expect(' # ')
+                            self.factorydefaultcheck = True
+                            self.factorydefault = True
+                        elif index > 1:
                             raise Exception('Attemtp to login to FortiGate failed please check username/password for FortiGate')
                 elif index == 3:                                        # with this, we want to figure out the hostname for FortiGate for better expect/match
                     hostname = self.rcs_console.before.decode('utf-8').splitlines()[-1].split(' ')[0]
@@ -824,7 +840,7 @@ class fortigate_remote_console():
             output = self.rcs_console.before.splitlines()
             outputs.append(output)
 
-            self.rcs_console.sendline('end')              # end to close out if FortiGate has VDOM enabled.
+            self.rcs_console.sendline('end')    # end to close out if FortiGate has VDOM enabled.
             self.rcs_console.expect(self.rcs_fgt_prompt)
             output = self.rcs_console.before.splitlines()
             outputs.append(output)
@@ -920,6 +936,7 @@ def run_module():
         if module.params['rcs_fgt_action'] == 'restoreimage':
             console_result = _fortigate_remote_console.fortigate_remote_console_restoreimage()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_restoreimage', **result)
                 return
@@ -928,6 +945,7 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'purgedhcp':
             console_result = _fortigate_remote_console.fortigate_remote_console_purgedhcp()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_purgedhcp, please check if remote console server is accessible and/or ' +
                                      'FortiGate is on and connected and/or FortiGate console connection is being used by another user!',
@@ -938,6 +956,7 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'diskformat':
             console_result = _fortigate_remote_console.fortigate_remote_console_diskformat()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_diskformat', **result)
                 return
@@ -947,6 +966,7 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'factoryreset':
             console_result = _fortigate_remote_console.fortigate_remote_console_factoryreset()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_factoryreset', **result)
                 return
@@ -955,6 +975,7 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'reboot':
             console_result = _fortigate_remote_console.fortigate_remote_console_reboot()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_reboot', **result)
                 return
@@ -963,6 +984,7 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'erasedisk':
             console_result = _fortigate_remote_console.fortigate_remote_console_erasedisk()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_erasedisk', **result)
                 return
@@ -971,6 +993,7 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'cli':
             console_result = _fortigate_remote_console.fortigate_remote_console_cli()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_cli', **result)
                 return
