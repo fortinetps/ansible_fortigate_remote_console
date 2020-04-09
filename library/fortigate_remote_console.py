@@ -92,8 +92,8 @@ class fortigate_remote_console():
         self.rcs_fgt_prompt = None      # CLI prompt for device (FGT) connected to the remote console port
 
         self.serial = None
-        self.factorydefaultcheck = False
-        self.factorydefault = False
+        self.version = None
+        self.factorydefault = None
 
     ############################################################################
     def fortigate_remote_console_cli(self):
@@ -215,7 +215,10 @@ class fortigate_remote_console():
             self.rcs_console.expect(self.rcs_fgt_prompt)
 
             # send exec factoryreset command
-            self.rcs_console.sendline('exec factoryreset')
+            if self.serial.find('FGVM') == 0:
+                self.rcs_console.sendline('exec factoryreset keepvmlicense')
+            else:
+                self.rcs_console.sendline('exec factoryreset')
             self.rcs_console.expect([r'Do you want to continue\? \(y\/n\)'])
             output = self.rcs_console.before.splitlines()
             outputs.append(output)
@@ -678,6 +681,7 @@ class fortigate_remote_console():
 
     ############################################################################
     def fortigate_remote_console_login(self):
+        self.factorydefault = False
         outputs = []
         ssh_connection_string = 'ssh %s -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l %s -p %d'\
                                 % (self.rcs_ip, self.rcs_username, self.rcs_fgt_port)
@@ -781,14 +785,12 @@ class fortigate_remote_console():
                         output = self.rcs_console.before.splitlines()
                         outputs.append(output)
                         if index == 0:  # this is FOS 6.0 factory default behavior
-                            self.factorydefaultcheck = True
                             self.factorydefault = True
                         elif index == 1:  # this is FOS 6.2 factory default behavior
                             self.rcs_console.sendline(self.rcs_fgt_password)
                             self.rcs_console.expect('Confirm Password:')
                             self.rcs_console.sendline(self.rcs_fgt_password)
                             self.rcs_console.expect(' # ')
-                            self.factorydefaultcheck = True
                             self.factorydefault = True
                         elif index > 1:
                             raise Exception('Attemtp to login to FortiGate failed please check username/password for FortiGate')
@@ -839,6 +841,20 @@ class fortigate_remote_console():
             self.rcs_console.expect(self.rcs_fgt_prompt)
             output = self.rcs_console.before.splitlines()
             outputs.append(output)
+
+            self.rcs_console.sendline('get system status | grep Version:')
+            self.rcs_console.expect(self.rcs_fgt_prompt)
+            for line in self.rcs_console.before.decode('utf8').splitlines():
+                if line.find('Version: ') == 0:
+                    self.version = line[len('Version: '):]
+                    break
+
+            self.rcs_console.sendline('get system status | grep Serial-Number:')
+            self.rcs_console.expect(self.rcs_fgt_prompt)
+            for line in self.rcs_console.before.decode('utf8').splitlines():
+                if line.find('Serial-Number: ') == 0:
+                    self.serial = line[len('Serial-Number: '):]
+                    break
 
             self.rcs_console.sendline('end')    # end to close out if FortiGate has VDOM enabled.
             self.rcs_console.expect(self.rcs_fgt_prompt)
@@ -936,6 +952,8 @@ def run_module():
         if module.params['rcs_fgt_action'] == 'restoreimage':
             console_result = _fortigate_remote_console.fortigate_remote_console_restoreimage()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['serial'] = _fortigate_remote_console.serial
+            result['version'] = _fortigate_remote_console.version
             result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_restoreimage', **result)
@@ -945,6 +963,8 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'purgedhcp':
             console_result = _fortigate_remote_console.fortigate_remote_console_purgedhcp()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['serial'] = _fortigate_remote_console.serial
+            result['version'] = _fortigate_remote_console.version
             result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_purgedhcp, please check if remote console server is accessible and/or ' +
@@ -956,6 +976,8 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'diskformat':
             console_result = _fortigate_remote_console.fortigate_remote_console_diskformat()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['serial'] = _fortigate_remote_console.serial
+            result['version'] = _fortigate_remote_console.version
             result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_diskformat', **result)
@@ -966,6 +988,8 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'factoryreset':
             console_result = _fortigate_remote_console.fortigate_remote_console_factoryreset()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['serial'] = _fortigate_remote_console.serial
+            result['version'] = _fortigate_remote_console.version
             result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_factoryreset', **result)
@@ -975,6 +999,8 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'reboot':
             console_result = _fortigate_remote_console.fortigate_remote_console_reboot()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['serial'] = _fortigate_remote_console.serial
+            result['version'] = _fortigate_remote_console.version
             result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_reboot', **result)
@@ -984,6 +1010,8 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'erasedisk':
             console_result = _fortigate_remote_console.fortigate_remote_console_erasedisk()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['serial'] = _fortigate_remote_console.serial
+            result['version'] = _fortigate_remote_console.version
             result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_erasedisk', **result)
@@ -993,6 +1021,8 @@ def run_module():
         elif module.params['rcs_fgt_action'] == 'cli':
             console_result = _fortigate_remote_console.fortigate_remote_console_cli()
             result['rcs_fgt_action_result'] = console_result['console_action_result']
+            result['serial'] = _fortigate_remote_console.serial
+            result['version'] = _fortigate_remote_console.version
             result['factorydefault'] = _fortigate_remote_console.factorydefault
             if console_result['status']:
                 module.fail_json(msg='Something wrong with rcs_fgt_cli', **result)
