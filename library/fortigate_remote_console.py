@@ -735,7 +735,7 @@ class fortigate_remote_console():
             while index != 3:
                 # send "enter" to FortiGate, FortiGate should spit out something, try to figure out what status/context FortiGate is in
                 self.rcs_console.sendline('')
-                index = self.rcs_console.expect(['dummy_placeholder', 'to accept', ' login: ', ' # ', pexpect.EOF, pexpect.TIMEOUT], timeout=15)
+                index = self.rcs_console.expect(['dummy_placeholder', 'to accept', ' login: ', ' # ', pexpect.EOF, pexpect.TIMEOUT], timeout=60)
                 output = self.rcs_console.before.splitlines()
                 outputs.append(output)
                 # option#1(return 0) is not supposed to be matched
