@@ -109,6 +109,7 @@ class fortigate_remote_console():
                 raise Exception("Problem with remote console connection, please check settings, and try 'ssh %s -p %s'.\n Error: %s"
                                 % (self.rcs_ip, self.rcs_fgt_port, output))
 
+            self.rcs_fgt_prompt.append(r'Do you want to continue\? \(y\/n\)')
             # for each command
             for command in self.rcs_fgt_cli[0].splitlines():
                 self.rcs_console.sendline(command)
@@ -122,7 +123,7 @@ class fortigate_remote_console():
                     # the first split find the last line, which contains the hostname
                     # the second split, in case FortiGate is inside configuration section or in global/vdom, FortiGate doesn't allow space in hostname
                     # update the hostname
-                    self.rcs_fgt_prompt = ['dummy_placeholder', hostname + ' # ', hostname + r' \(.+\) # ', ' # ', ' login: ', 'to accept']
+                    self.rcs_fgt_prompt = ['dummy_placeholder', hostname + ' # ', hostname + r' \(.+\) # ', ' # ', ' login: ', 'to accept', r'Do you want to continue\? \(y\/n\)']
 
                 elif index == 4 or index == 5:    # with this, it seems like password was changed in the middle of the command (mostly by set password)
                     # simple close the connection and return
@@ -130,6 +131,9 @@ class fortigate_remote_console():
                     self.rcs_console.close()
                     self.rcs_console = None
                     break
+
+                elif index == len(self.rcs_fgt_prompt) - 1:    # with this, it seems like the cli command trigger a y/n question, and we are going to answer y by default
+                    self.rcs_console.send('y')
 
             rcs_result['status'] = 0
             rcs_result['changed'] = True
